@@ -10,8 +10,8 @@ score = 0
 margin=0.1
 
 --logic variables
-tile_num=16
-tile_size=128/tile_num
+tile_num={x=16,y=32}
+tile_size={x=64/tile_num.x,y=128/tile_num.y}
 
 --loop variables
 update_speed = 0.1
@@ -48,6 +48,7 @@ function _update()
 	end
 end
 
+--todo: draw only changes
 function draw()
 	cls(1)
  draw_wall()
@@ -59,7 +60,7 @@ end
 -- draw functions
 function draw_tile(x,y,col)
 	rectfill(x+margin,y+margin,
-		x+tile_size-1-margin,y+tile_size-1-margin,col)
+		x+tile_size.x-1-margin,y+tile_size.y-1-margin,col)
 end
 
 function draw_snake()
@@ -127,8 +128,8 @@ end
 -->8
 -- utilities
 function grid_game_position(coordinates)
-	local x = tile_size*coordinates.x
-	local y = tile_size*coordinates.y
+	local x = tile_size.x*coordinates.x
+	local y = tile_size.y*coordinates.y
 	return {x=x,y=y}
 end
 
@@ -142,7 +143,7 @@ end
 -->8
 --building functions
 function build_snake()
-	snake_position[1] = grid_game_position({x=tile_num/2,y=tile_num/2})
+	snake_position[1] = grid_game_position({x=tile_num.x/2,y=tile_num.y/2})
 	for cell=2,snake_size do
 		local pos=copy_position(snake_position[cell-1])
 		local diff=grid_game_position({x=direction.x,y=direction.y})
@@ -155,15 +156,15 @@ end
 function build_wall()
 	slot=1
 	--horizontal
-	for i=0,tile_num-1 do
+	for i=0,tile_num.x-1 do
 		wall_pos[slot]=grid_game_position({x=i,y=0})
-		wall_pos[slot+1]=grid_game_position({x=i,y=tile_num-1})
+		wall_pos[slot+1]=grid_game_position({x=i,y=tile_num.y-1})
 		slot+=2
 	end
 	--vertical
-	for i=0,tile_num-2 do
+	for i=0,tile_num.y-2 do
 		wall_pos[slot]=grid_game_position({x=0,y=i})
-		wall_pos[slot+1]=grid_game_position({x=tile_num-1,y=i})
+		wall_pos[slot+1]=grid_game_position({x=tile_num.x-1,y=i})
 		slot+=2
 	end
 end
