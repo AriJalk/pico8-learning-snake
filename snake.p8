@@ -6,6 +6,7 @@ snake_position = {}
 wall_pos = {}
 snake_size = 4
 score = 0
+tail_pos=nil
 
 margin=0.1
 
@@ -24,7 +25,7 @@ function _init()
 	build_wall()
 	direction = {x=0,y=1}
  last_time = time()
- draw()
+ draw_initial()
 end
 
 function _update()
@@ -35,7 +36,7 @@ function _update()
 		update_time = 0
 		update_snake()
 		check_collision()
-		draw()
+		draw_update()
 	end
 	if (btn(❎)) then
 		update_speed += 0.01
@@ -49,11 +50,16 @@ function _update()
 end
 
 --todo: draw only changes
-function draw()
+function draw_initial()
 	cls(1)
  draw_wall()
- draw_snake()
- draw_score()
+ draw_snake_initial()
+	flip()
+end
+
+function draw_update()
+	draw_snake_update()
+	
 	flip()
 end
 -->8
@@ -63,11 +69,22 @@ function draw_tile(pos,col)
 		pos.x+tile_size.x-1-margin,pos.y+tile_size.y-1-margin,col)
 end
 
-function draw_snake()
+function draw_snake_initial()
  for i=2,snake_size do
 	 draw_tile(snake_position[i],10)
  end
 	draw_tile(snake_position[1],2)
+end
+
+function draw_snake_update()
+	--remove tail
+	draw_tile(tail_pos,1)
+	--add head
+	draw_tile(snake_position[1],2)
+	--change head to body
+	if snake_size>1 then
+		draw_tile(snake_position[2],10)
+	end
 end
 
 function draw_wall()
@@ -99,6 +116,7 @@ function update_input()
 end
 
 function update_snake()
+	tail_pos=pos_cpy(snake_position[snake_size])
 	for cell=snake_size,2,-1 do
  		snake_position[cell]=pos_cpy(snake_position[cell-1])
  end
