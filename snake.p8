@@ -58,25 +58,21 @@ function draw()
 end
 -->8
 -- draw functions
-function draw_tile(x,y,col)
-	rectfill(x+margin,y+margin,
-		x+tile_size.x-1-margin,y+tile_size.y-1-margin,col)
+function draw_tile(pos,col)
+	rectfill(pos.x+margin,pos.y+margin,
+		pos.x+tile_size.x-1-margin,pos.y+tile_size.y-1-margin,col)
 end
 
 function draw_snake()
  for i=2,snake_size do
- 	local x = snake_position[i].x
-	 local y = snake_position[i].y
-	 draw_tile(x,y,10)
+	 draw_tile(snake_position[i],10)
  end
- x = snake_position[1].x
-	y = snake_position[1].y
-	draw_tile(x,y,2)
+	draw_tile(snake_position[1],2)
 end
 
 function draw_wall()
 	for wall in all(wall_pos) do
-		draw_tile(wall.x,wall.y,5)
+		draw_tile(wall,5)
 	end
 end
 
@@ -104,7 +100,7 @@ end
 
 function update_snake()
 	for cell=snake_size,2,-1 do
- 		snake_position[cell]=copy_position(snake_position[cell-1]) 		
+ 		snake_position[cell]=pos_cpy(snake_position[cell-1])
  end
  //update head
  local pos = grid_game_position(direction)
@@ -133,7 +129,7 @@ function grid_game_position(coordinates)
 	return {x=x,y=y}
 end
 
-function copy_position(origin)
+function pos_cpy(origin)
 	return {x=origin.x,y=origin.y}
 end
 
@@ -145,7 +141,7 @@ end
 function build_snake()
 	snake_position[1] = grid_game_position({x=tile_num.x/2,y=tile_num.y/2})
 	for cell=2,snake_size do
-		local pos=copy_position(snake_position[cell-1])
+		local pos=pos_cpy(snake_position[cell-1])
 		local diff=grid_game_position({x=direction.x,y=direction.y})
 		pos.x+=diff.x
 		pos.y+=diff.y
