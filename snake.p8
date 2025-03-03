@@ -15,23 +15,28 @@ fruit_pos=nil
 dir_buffer=nil
 
 --grid variables
-grid_size={x=64,y=128}
---x should be even and y/2
-tile_num={x=8,y=16}
+--pixel size
+grid_size={x=96,y=128}
+--number of tiles, in proportion to grid_size
+tile_num={x=12,y=16}
 tile_size={x=grid_size.x/tile_num.x,y=grid_size.y/tile_num.y}
-panel_size={x=32,y=128}
-margin=0.5
+margin=0.1
 
-segment_num={x=4,y=4}
+panel_size={x=128-96,y=128}
+
+
+--collision segments
 segments = {}
+segment_num={x=4,y=4}
 segment_size={x=tile_num.x/segment_num.x,y=tile_num.y/segment_num.y}
 
 --loop variables
-update_speed = 0.1
+update_interval = 0.3
 update_time = 0
 
 
 function _init()
+ update_interval=0.3
  snake_size=3
  score=0
 	build_segments()
@@ -47,7 +52,7 @@ function _update()
 	update_input()
 	update_time += time()-last_time
 	last_time = time()
-	if(update_time > update_speed) then
+	if(update_time > update_interval) then
 		update_time = 0
 		update_snake()
 		if check_collision(snake_pos[1]) then
@@ -55,15 +60,15 @@ function _update()
 		end
 		draw_update()
 	end
-	if (btn(❎)) then
-		update_speed += 0.01
-		update_speed = min(update_speed,1)
-		--update_speed = mid(0, updade_speed, 2)
-	elseif (btn(🅾️)) then
-		update_speed -= 0.01
-		update_speed = max(0,update_speed)
-		--update_speed = mid(0, update_speed, 2)
-	end
+--	if (btn(❎)) then
+--		update_speed += 0.01
+--		update_speed = min(update_speed,1)
+--		--update_speed = mid(0, updade_speed, 2)
+--	elseif (btn(🅾️)) then
+--		update_speed -= 0.01
+--		update_speed = max(0,update_speed)
+--		--update_speed = mid(0, update_speed, 2)
+--	end
 end
 
 --todo: draw only changes
@@ -118,23 +123,23 @@ function draw_panel()
 	rectfill(0,0,panel_size.x-1,panel_size.y-1,1)
 	color(9)
 	print("score: "..score,1,1)
-	print("["..snake_pos[1].x..","..snake_pos[1].y.."]",1,7)
-	--print("["..snake_position[2].x..","..snake_position[2].y.."]",30,7)
-	print("t: "..update_time,1,13)
-	print(update_speed,1,20)
+	//print("["..snake_pos[1].x..","..snake_pos[1].y.."]",1,7)
+	//print("["..snake_position[2].x..","..snake_position[2].y.."]",30,7)
+	//print("t: "..update_time,1,13)
+	print('i:'..update_interval,1,10)
 	
 --	--debug
 -- for i=1,#segments_map do
 --  print('('..segments_map[i].s.x..','..segments_map[i].s.y..')'..'('..segments_map[i].e.x..','..segments_map[i].e.y..')',1,i*10+50)
 -- 
 -- end
-	print(fruit_pos.x..','..fruit_pos.y,1,50)
+--	print(fruit_pos.x..','..fruit_pos.y,1,50)
 end
 -->8
 -- update functions
 //todo: buffer
 function update_input()
-	local new_dir=nil
+	local new_dir
 	if btn(➡️) then
 		new_dir = {x=1, y=0}
 	elseif btn(⬅️) then
@@ -144,12 +149,10 @@ function update_input()
 	elseif btn(⬆️) then
 		new_dir = {x=0, y=-1}
 	end
-	if new_dir!=nil then
-		if snake_size>1 then
-			local new_pos=pos_add(snake_pos[1],new_dir)
-			if pos_equals(new_pos,snake_pos[2]) then
-				return
-			end
+	if new_dir and snake_size>1 then
+		local new_pos=pos_add(snake_pos[1],new_dir)
+		if pos_equals(new_pos,snake_pos[2]) then
+			return
 		end
 		direction=new_dir
 	end
@@ -183,6 +186,8 @@ function update_snake()
  if fruit_eaten then
  	score+=1
  	add_fruit()
+ 	update_interval-=0.005
+ 	update_interval=max(0,update_interval)
  end
 end
 
