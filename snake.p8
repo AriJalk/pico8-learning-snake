@@ -15,18 +15,16 @@ fruit_pos=nil
 dir_buffer=nil
 
 --grid variables
-grid_size={x=96,y=128}
+grid_size={x=64,y=128}
 --x should be even and y/2
-tile_num={x=12,y=16}
+tile_num={x=8,y=16}
 tile_size={x=grid_size.x/tile_num.x,y=grid_size.y/tile_num.y}
 panel_size={x=32,y=128}
 margin=0.5
 
-segment_num={x=2,y=4}
+segment_num={x=4,y=4}
 segments = {}
 segment_size={x=tile_num.x/segment_num.x,y=tile_num.y/segment_num.y}
-
-seg_ratio={x=tile_num.x/segment_num.x,y=tile_num.y/segment_num.y}
 
 --loop variables
 update_speed = 0.1
@@ -38,8 +36,8 @@ function _init()
  score=0
 	build_segments()
 	direction = {x=1,y=0}
-	build_snake()
 	build_wall()
+	build_snake()
  last_time = time()
  draw_initial()
  add_fruit()
@@ -99,7 +97,9 @@ end
 
 function draw_snake_update()
 	--remove tail
-	draw_tile(tail_pos,1)
+	if not pos_equals(tail_pos,fruit_pos) then
+		draw_tile(tail_pos,1)
+	end
 	--add head
 	draw_tile(snake_pos[1],2)
 	--change head to body
@@ -172,7 +172,7 @@ function update_snake()
 
 	--update body
 	for cell=snake_size,2,-1 do
- 		snake_pos[cell]=pos_cpy(snake_pos[cell-1])
+ 		snake_pos[cell]=snake_pos[cell-1]
  end
  --update head
  snake_pos[1] = pos_add(snake_pos[1],direction)
@@ -214,11 +214,10 @@ end
 function add_fruit()
  while true do
  	local pos=pos_rnd()
- 
- 	if not check_collision(pos) and not pos_equals(pos,snake_pos[1]) do
+ 	if not check_collision(pos) and not pos_equals(pos,snake_pos[1]) then
  	 fruit_pos=pos
  	 draw_tile(pos,3)
- 		break
+ 		return
  	end
  end
 end
@@ -246,7 +245,7 @@ function pos_add(pos_a,pos_b)
 end
 
 function pos_rnd()
-	return {x=flr(rnd(tile_num.x-1))+1,y=flr(rnd(tile_num.y-1))+1}
+	return {x=flr(rnd(tile_num.x-1)),y=flr(rnd(tile_num.y-1))}
 end
 
 function pos_str(pos)
@@ -265,6 +264,7 @@ function build_snake()
 		snake_pos[cell]=pos
 		add_collision(pos)
 	end
+	
 end
 
 function build_wall()
