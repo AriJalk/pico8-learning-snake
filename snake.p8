@@ -22,7 +22,7 @@ tile_size={x=grid_size.x/tile_num.x,y=grid_size.y/tile_num.y}
 panel_size={x=64,y=128}
 margin=0.5
 
-segment_num = {x=1,y=2}
+segment_num = {x=2,y=2}
 segments = {}
 segments_map = {}
 
@@ -79,9 +79,10 @@ end
 -->8
 -- draw functions
 function draw_tile(pos,col)
-	local x = pos.x + 128 - grid_size.x
-	rectfill(x+margin,pos.y+margin,
-		x+tile_size.x-1-margin,pos.y+tile_size.y-1-margin,col)
+	local draw_pos=grid_game_position(pos)
+	draw_pos.x += 128 - grid_size.x
+	rectfill(draw_pos.x+margin,draw_pos.y+margin,
+		draw_pos.x+tile_size.x-1-margin,draw_pos.y+tile_size.y-1-margin,col)
 end
 
 function draw_snake_initial()
@@ -149,7 +150,7 @@ function update_snake()
  		snake_position[cell]=pos_cpy(snake_position[cell-1])
  end
  --update head
- local dir=grid_game_position(direction)
+ local dir=direction
  snake_position[1] = pos_add(snake_position[1],dir)
  if snake_position[2]!=nil then
   add_collision(snake_position[2])
@@ -181,7 +182,7 @@ function check_collision()
 end
 
 -->8
--- utilities
+-- position
 function grid_game_position(coordinates)
 	local x = tile_size.x*coordinates.x
 	local y = tile_size.y*coordinates.y
@@ -207,12 +208,11 @@ end
 
 
 function build_snake()
-	snake_position[1] = grid_game_position({x=tile_num.x/2,y=tile_num.y/2})
+	snake_position[1] = {x=tile_num.x/2,y=tile_num.y/2}
 	for cell=2,snake_size do
 		local pos=pos_cpy(snake_position[cell-1])
-		local diff=grid_game_position({x=-direction.x,y=-direction.y})
-		pos.x+=diff.x
-		pos.y+=diff.y
+		local diff={x=-direction.x,y=-direction.y}
+		pos = pos_add(pos,diff)
 		snake_position[cell]=pos
 		add_collision(pos)
 	end
@@ -222,17 +222,17 @@ function build_wall()
 	slot=1
 	--horizontal
 	for i=0,tile_num.x-1 do
-		wall_pos[slot]=grid_game_position({x=i,y=0})
+		wall_pos[slot]={x=i,y=0}
 		add_collision(wall_pos[slot])
-		wall_pos[slot+1]=grid_game_position({x=i,y=tile_num.y-1})
+		wall_pos[slot+1]={x=i,y=tile_num.y-1}
 		add_collision(wall_pos[slot+1])
 		slot+=2
 	end
 	--vertical
 	for i=0,tile_num.y-2 do
-		wall_pos[slot]=grid_game_position({x=0,y=i})
+		wall_pos[slot]={x=0,y=i}
 		add_collision(wall_pos[slot])
-		wall_pos[slot+1]=grid_game_position({x=tile_num.x-1,y=i})
+		wall_pos[slot+1]={x=tile_num.x-1,y=i}
 		add_collision(wall_pos[slot+1])
 		slot+=2
 	end
@@ -272,8 +272,8 @@ end
 
 function build_segments_map()
 	counter=1
-	for i=0,segment_num.x do
-		for j=0,segment_num.y do
+	for i=0,segment_num.x-1 do
+		for j=0,segment_num.y-1 do
 		 local x_min=i*seg_ratio.x
 		 local x_max=(i+1)*seg_ratio.x
 		 local y_min=j*seg_ratio.y
