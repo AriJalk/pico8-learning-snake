@@ -20,11 +20,11 @@ dir_buffer=nil
 
 --grid variables
 --pixel size
---grid_size={x=96,y=128}
-grid_size={x=96,y=96}
+grid_size={x=96,y=128}
+--grid_size={x=96,y=96}
 --number of tiles, in proportion to grid_size
---tile_num={x=12,y=16}
-tile_num={x=6,y=6}
+tile_num={x=12,y=16}
+--tile_num={x=6,y=6}
 tile_size={x=grid_size.x/tile_num.x,y=grid_size.y/tile_num.y}
 margin=0.1
 
@@ -162,7 +162,7 @@ end
 function draw_panel()
 	rectfill(0,0,panel_size.x-1,panel_size.y-1,1)
 	color(9)
-	print("score: "..score,1,1)
+	print("s:"..score,1,1)
 	//print("["..snake_pos[1].x..","..snake_pos[1].y.."]",1,7)
 	//print("["..snake_position[2].x..","..snake_position[2].y.."]",30,7)
 	//print("t: "..update_time,1,13)
