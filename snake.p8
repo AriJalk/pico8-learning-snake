@@ -8,17 +8,23 @@ snake_pos = {}
 wall_pos = {}
 snake_size = 0
 score = 0
+head_pos=nil
 tail_pos=nil
 fruit_pos=nil
+
+--game flags
+is_fruit_placed=false
 
 --input
 dir_buffer=nil
 
 --grid variables
 --pixel size
-grid_size={x=96,y=128}
+--grid_size={x=96,y=128}
+grid_size={x=96,y=96}
 --number of tiles, in proportion to grid_size
-tile_num={x=12,y=16}
+--tile_num={x=12,y=16}
+tile_num={x=6,y=6}
 tile_size={x=grid_size.x/tile_num.x,y=grid_size.y/tile_num.y}
 margin=0.1
 
@@ -36,61 +42,90 @@ update_time = 0
 
 
 function _init()
+	win_size=(tile_num.x-2)*(tile_num.y-2)
+	printh('winsize:'..win_size)
+	is_game_running=true
  update_interval=0.3
  snake_size=3
+ snake_pos={}
  score=0
+ segments={}
 	build_segments()
 	direction = {x=1,y=0}
 	build_wall()
 	build_snake()
+	tail_pos=nil
+	fruit_pos=pos_add(head_pos,direction)
+	is_fruit_placed=true
  last_time = time()
  draw_initial()
- add_fruit()
 end
 
 function _update()
-	update_input()
-	update_time += time()-last_time
-	last_time = time()
-	if(update_time > update_interval) then
-		update_time = 0
-		update_snake()
-		if check_collision(snake_pos[1]) then
-		 _init()
+	if is_game_running then
+		update_input()
+		update_time += time()-last_time
+		last_time = time()
+		if(update_time > update_interval) then
+			update_time = 0
+			update_snake()
+			if is_fruit_placed and is_game_running then
+				add_fruit()
+			end
+			if check_collision(snake_pos[1]) then
+			 _init()
+			 return
+			end
 		end
-		draw_update()
-	end
---	if (btn(❎)) then
---		update_speed += 0.01
---		update_speed = min(update_speed,1)
---		--update_speed = mid(0, updade_speed, 2)
---	elseif (btn(🅾️)) then
---		update_speed -= 0.01
---		update_speed = max(0,update_speed)
+	draw_update()
+ end
+	if (btn(❎)) then
+		update_interval += 0.01
+		update_interval = min(update_interval,1)
+		--update_speed = mid(0, updade_speed, 2)
+	elseif (btnp(🅾️)) then
+		_init()
+		return
+--		update_interval -= 0.01
+--		update_interval = max(0,update_interval)
 --		--update_speed = mid(0, update_speed, 2)
---	end
+	end
 end
 
---todo: draw only changes
+
+-->8
+-- draw functions
+
+--engine draw managers
+
 function draw_initial()
 	cls(1)
  draw_wall()
  draw_snake_initial()
+ draw_fruit()
 	flip()
 end
 
 function draw_update()
 	draw_snake_update()
 	draw_panel()
+	if is_fruit_placed then
+		draw_fruit()
+	end
 	flip()
 end
--->8
--- draw functions
+
+--draw functions
 function draw_tile(pos,col)
 	local draw_pos=grid_game_position(pos)
 	draw_pos.x += 128 - grid_size.x
 	rectfill(draw_pos.x+margin,draw_pos.y+margin,
 		draw_pos.x+tile_size.x-1-margin,draw_pos.y+tile_size.y-1-margin,col)	
+end
+
+function draw_fruit()
+	draw_tile(fruit_pos,3)
+	is_fruit_placed=false
 end
 
 function draw_snake_initial()
@@ -102,7 +137,7 @@ end
 
 function draw_snake_update()
 	--remove tail
-	if not pos_equals(tail_pos,fruit_pos) then
+	if tail_pos and not pos_equals(tail_pos,fruit_pos) then
 		draw_tile(tail_pos,1)
 	end
 	--add head
@@ -135,6 +170,11 @@ function draw_panel()
 -- end
 --	print(fruit_pos.x..','..fruit_pos.y,1,50)
 end
+
+function draw_win_screen()
+ rectfill(30,30,98,98,4)
+ print('you win',64,64)
+end
 -->8
 -- update functions
 //todo: buffer
@@ -161,34 +201,26 @@ end
 
 
 function update_snake()
-	local fruit_eaten=false
-	local new_pos=pos_add(snake_pos[1],direction)
+	head_pos=pos_add(snake_pos[1],direction)
 	--check if fruit eaten
-	if not pos_equals(new_pos,fruit_pos) then
+	if not pos_equals(head_pos,fruit_pos) then
 		--update tail
 		tail_pos=snake_pos[snake_size]
 		del_collision(tail_pos)
 	else
+		is_fruit_placed=true
 		snake_size+=1
-		fruit_eaten=true
+		score+=1
+ 	update_interval-=0.01
+ 	update_interval=max(0,update_interval)
 	end
-
 	--update body
 	for cell=snake_size,2,-1 do
  		snake_pos[cell]=snake_pos[cell-1]
  end
  --update head
- snake_pos[1] = pos_add(snake_pos[1],direction)
- if snake_pos[2]!=nil then
-  add_collision(snake_pos[2])
- end
- --add fruit if needed
- if fruit_eaten then
- 	score+=1
- 	add_fruit()
- 	update_interval-=0.005
- 	update_interval=max(0,update_interval)
- end
+ add_collision(snake_pos[1])
+ snake_pos[1] = head_pos
 end
 
 function check_collision(pos)
@@ -219,12 +251,17 @@ end
 function add_fruit()
  while true do
  	local pos=pos_rnd()
- 	if not check_collision(pos) and not pos_equals(pos,snake_pos[1]) then
+ 	if not check_collision(pos) and not pos_equals(pos,head_pos) then
  	 fruit_pos=pos
- 	 draw_tile(pos,3)
+-- 	 printh('pos:'..pos_str(fruit_pos))
+--			printh('head:'..pos_str(head_pos))
  		return
  	end
  end
+end
+
+function check_victory()
+	return snake_size==win_size
 end
 -->8
 -- position
@@ -262,6 +299,7 @@ end
 
 function build_snake()
 	snake_pos[1] = {x=tile_num.x/2,y=tile_num.y/2}
+	head_pos=snake_pos[1]
 	for cell=2,snake_size do
 		local pos=pos_cpy(snake_pos[cell-1])
 		local diff={x=-direction.x,y=-direction.y}
