@@ -12,6 +12,16 @@ head_pos=nil
 tail_pos=nil
 fruit_pos=nil
 
+last_direction=nil
+direction=nil
+directions=
+{
+	left={x=-1,y=0},
+	right={x=1,y=0},
+	up={x=0,y=-1},
+	down={x=0,y=1}
+}
+
 --game flags
 is_fruit_placed=false
 
@@ -26,9 +36,25 @@ grid_size={x=96,y=128}
 tile_num={x=12,y=16}
 --tile_num={x=6,y=6}
 tile_size={x=grid_size.x/tile_num.x,y=grid_size.y/tile_num.y}
-margin=0.1
+margin=0
 
 panel_size={x=128-96,y=128}
+
+spr_size={sw=8,sh=8,dw=tile_size.x,dh=tile_size.y}
+
+sprites={
+	body_v={sx=8,sy=0},
+	body_h={sx=16,sy=0},
+	elbow={sx=24,sy=0},
+	tail_v={sx=32,sy=0},
+	tail_h={sx=40,sy=0},
+	head_v={sx=48,sy=0},
+	head_h={sx=56,sy=0},
+	fruit={sx=64,sy=0},
+	wall={sx=72,sy=0},
+	empty={sx=80,sy=0}
+}
+
 
 
 --collision segments
@@ -51,7 +77,7 @@ function _init()
  score=0
  segments={}
 	build_segments()
-	direction = {x=1,y=0}
+	direction=directions.right
 	build_wall()
 	build_snake()
 	tail_pos=nil
@@ -108,7 +134,7 @@ function draw_initial()
  draw_wall()
  draw_snake_initial()
  draw_fruit()
-	flip()
+	//flip()
 end
 
 function draw_update()
@@ -117,45 +143,61 @@ function draw_update()
 	if is_fruit_placed then
 		draw_fruit()
 	end
-	flip()
+	//flip()
+end
+
+function draw_sprite(sprite,pos,flip_x,flip_y)
+	if flip_x==nil then flip_x=false end
+	if flip_y==nil then flip_y=false end
+	local draw_pos=grid_game_position(pos)
+	draw_pos.x += 128 - grid_size.x
+	sspr(
+		sprite.sx,sprite.sy,
+		spr_size.sw,spr_size.sh,
+		draw_pos.x,draw_pos.y,
+		spr_size.dw,spr_size.dh,
+		flip_x,flip_y)
 end
 
 --draw functions
 function draw_tile(pos,col)
 	local draw_pos=grid_game_position(pos)
 	draw_pos.x += 128 - grid_size.x
-	rectfill(draw_pos.x+margin,draw_pos.y+margin,
+	rectfill(
+		draw_pos.x+margin,draw_pos.y+margin,
 		draw_pos.x+tile_size.x-1-margin,draw_pos.y+tile_size.y-1-margin,col)	
 end
 
 function draw_fruit()
-	draw_tile(fruit_pos,3)
+	draw_sprite(sprites.fruit,fruit_pos)
+	--todo:somwhere else
 	is_fruit_placed=false
 end
 
 function draw_snake_initial()
- for i=2,snake_size do
-	 draw_tile(snake_pos[i],10)
+ if direction==directions.right then
+ 	draw_sprite(sprites.head_h,head_pos)
+ elseif direction==directions.left then
+ 	draw_sprite(sprites.head_h,head_pos,true)
  end
-	draw_tile(snake_pos[1],2)
 end
 
 function draw_snake_update()
 	--remove tail
 	if tail_pos and not pos_equals(tail_pos,fruit_pos) then
-		draw_tile(tail_pos,1)
+		draw_sprite(sprites.empty,tail_pos)
 	end
 	--add head
-	draw_tile(snake_pos[1],2)
+	draw_sprite(sprites.head_h,head_pos)
 	--change head to body
 	if snake_size>1 then
-		draw_tile(snake_pos[2],10)
+		draw_sprite(sprites.body_h,snake_pos[2])
 	end
 end
 
 function draw_wall()
 	for wall in all(wall_pos) do
-		draw_tile(wall,5)
+		draw_sprite(sprites.wall,wall)
 	end
 end
 
@@ -187,13 +229,13 @@ end
 function update_input()
 	local new_dir
 	if btn(➡️) then
-		new_dir = {x=1, y=0}
+		new_dir=directions.right
 	elseif btn(⬅️) then
-		new_dir = {x=-1, y=0}
+		new_dir=directions.left
 	elseif btn(⬇️) then
-		new_dir = {x=0, y=1}
+		new_dir=directions.down
 	elseif btn(⬆️) then
-		new_dir = {x=0, y=-1}
+		new_dir=directions.up
 	end
 	if new_dir and snake_size>1 then
 		local new_pos=pos_add(snake_pos[1],new_dir)
@@ -368,9 +410,11 @@ function build_segments()
  end
 end
 __gfx__
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000300003000000000000000000300003000000000000000000000000000bb000000000000111111110000000000000000000000000000000000000000
+00000000030000303333333303333333030000303333333308a88a8008888880000bb00006666660111111110000000000000000000000000000000000000000
+00700700030000300000000003000000030000300000000308000080080000a0008b800006000060111111110000000000000000000000000000000000000000
+00077000030000300000000003000000030000300000000308000080080000800888880006000060111111110000000000000000000000000000000000000000
+00077000030000300000000003000000030000300000000308000080080000800888780006000060111111110000000000000000000000000000000000000000
+00700700030000300000000003000000030000300000000308000080080000a00888880006000060111111110000000000000000000000000000000000000000
+00000000030000303333333303000033030000303333333308888880088888800088800006666660111111110000000000000000000000000000000000000000
+00000000030000300000000003000030033333300000000000000000000000000000000000000000111111110000000000000000000000000000000000000000
