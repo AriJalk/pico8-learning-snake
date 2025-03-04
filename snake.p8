@@ -104,7 +104,8 @@ function _update()
 				add_fruit()
 			end
 			if check_collision(snake_pos[1]) then
-			 _init()
+			 is_game_running=false
+			 draw_lose_panel()
 			 return
 			end
 		end
@@ -134,7 +135,6 @@ function draw_initial()
  draw_wall()
  draw_snake_initial()
  draw_fruit()
-	//flip()
 end
 
 function draw_update()
@@ -143,7 +143,7 @@ function draw_update()
 	if is_fruit_placed then
 		draw_fruit()
 	end
-	//flip()
+	flip()
 end
 
 function draw_sprite(sprite,pos,flip_x,flip_y)
@@ -157,6 +157,29 @@ function draw_sprite(sprite,pos,flip_x,flip_y)
 		draw_pos.x,draw_pos.y,
 		spr_size.dw,spr_size.dh,
 		flip_x,flip_y)
+end
+
+
+function draw_orientation(spr_name,pos,dir)
+ if dir==nil then
+  dir=pos.dir
+ end
+ local flip_x=false
+ local flip_y=false
+ local o=nil
+ if dir==directions.right or dir==directions.left then
+ 	o='h'
+ 	if dir==directions.left then
+ 	 flip_x=true
+ 	end
+ elseif dir==directions.up or dir==directions.down then
+  o='v'
+  if dir==directions.down then
+   flip_y=true
+  end
+ end
+ local str=spr_name..'_'..o
+ draw_sprite(sprites[str],pos,flip_x,flip_y)
 end
 
 --draw functions
@@ -202,25 +225,10 @@ function draw_panel()
 	rectfill(0,0,panel_size.x-1,panel_size.y-1,1)
 	color(9)
 	print("s:"..score,1,1)
-	//print("["..snake_pos[1].x..","..snake_pos[1].y.."]",1,7)
-	//print("["..snake_position[2].x..","..snake_position[2].y.."]",30,7)
-	//print("t: "..update_time,1,13)
 	print('i:'..update_interval,1,10)
-	
---	--debug
--- for i=1,#segments_map do
---  print('('..segments_map[i].s.x..','..segments_map[i].s.y..')'..'('..segments_map[i].e.x..','..segments_map[i].e.y..')',1,i*10+50)
--- 
--- end
---	print(fruit_pos.x..','..fruit_pos.y,1,50)
 end
 
-function draw_win_panel()
- rectfill(32,32,128-32,128-32,4)
- print('you win',32,64,6)
- print('press 🅾️ to reset',6)
-end
-
+--snake parts
 
 function draw_head()
 	draw_orientation('head',head_pos)
@@ -228,15 +236,11 @@ end
 
 function draw_tail()
  if snake_size>1 then
- 	draw_orientation('tail',snake_pos[snake_size])
+  draw_tile(snake_pos[snake_size],1)
+ 	draw_orientation('tail',snake_pos[snake_size],snake_pos[snake_size-1].dir)
  end
 end
 
-function draw_body_update()
- if snake_size>2 then
- 	draw_orientation('body',snake_pos[2])
- end
-end
 
 function draw_body_initial()
  for i=1,snake_size-1 do
@@ -244,24 +248,59 @@ function draw_body_initial()
  end
 end
 
-function draw_orientation(spr_name,pos)
- local dir=pos.dir
- local flip_x=false
- local flip_y=false
- local o=nil
- if dir==directions.right or dir==directions.left then
- 	o='h'
- 	if dir==directions.left then
- 	 flip_x=true
+--only call when cells[2-3] are orthogonal
+function draw_elbow()	
+	local sprite=sprites.elbow
+	local pos_a=snake_pos[1]
+	local pos_b=snake_pos[2]
+	
+	local right_a=(pos_a.dir==directions.right)
+	local left_a=(pos_a.dir==directions.left)
+	local up_a=(pos_a.dir==directions.up)
+	local down_a=(pos_a.dir==directions.down)
+	
+	local right_b=(pos_b.dir==directions.right)
+	local left_b=(pos_b.dir==directions.left)
+	local up_b=(pos_b.dir==directions.up)
+	local down_b=(pos_b.dir==directions.down)
+	
+	if right_a or left_b then
+	 if up_a or down_b then
+	  draw_sprite(sprite,pos_b,false,true)
+	 else
+	  draw_sprite(sprite,pos_b,false,false)
+	 end
+	elseif left_a or right_b then
+	 if up_a or down_b then
+	 	draw_sprite(sprite,pos_b,true,true)
+	 else
+	 	draw_sprite(sprite,pos_b,true,false)
+		end
+	end
+end
+
+function draw_body_update()
+ --continuous
+ if snake_size>2 then
+   draw_tile(snake_pos[2],1)
+	 if snake_pos[2].dir==snake_pos[1].dir then
+  	draw_orientation('body',snake_pos[2])
+ 	else
+ 	 draw_elbow() 	
  	end
- elseif dir==directions.up or dir==directions.down then
-  o='v'
-  if dir==directions.down then
-   flip_y=true
-  end
  end
- local str=spr_name..'_'..o
- draw_sprite(sprites[str],pos,flip_x,flip_y)
+end
+
+function draw_win_panel()
+-- rectfill(25,25,128-25,128-25,4)
+ print('you win',32,64,10)
+ print('press 🅾️ to reset',10)
+end
+
+function draw_lose_panel()
+-- rectfill(25,25,128-25,128-25,2)
+ print('you lose, score:'..score,32,64,10)
+ print('press 🅾️ to reset',10)
 end
 -->8
 -- update functions
@@ -452,11 +491,11 @@ function build_segments()
  end
 end
 __gfx__
-000000000399993000000000000000000399993000000000000000000000000000bb000000000000111111110000000000000000000000000000000000000000
-000000000399993003333333033333330399993033333333088bb88008888880000bb00006666660111111110000000000000000000000000000000000000000
-007007000399993009999999039999990399993039999999088888800888a880008b800006000060111111110000000000000000000000000000000000000000
-00077000039999300999999903999999039999303999999908a88a80088888b00888880006000060111111110000000000000000000000000000000000000000
-00077000039999300999999903999999039999303999999908888880088888b00888780006000060111111110000000000000000000000000000000000000000
-007007000399993009999999039999990399993039999999088888800888a8800888880006000060111111110000000000000000000000000000000000000000
-00000000039999300333333303999933039999303333333308888880088888800088800006666660111111110000000000000000000000000000000000000000
-00000000000000000000000003999930033333300000000000000000000000000000000000000000111111110000000000000000000000000000000000000000
+000000000399993000000000000000000399993000000000000000000000000000bb0000dddddddd111111110000000000000000000000000000000000000000
+000000000399993003333333033333300399993033333333088bb88008888880000bb000d555555d111111110000000000000000000000000000000000000000
+007007000399993009999999039999900399993039999999088888800888a880008b8000d555555d111111110000000000000000000000000000000000000000
+00077000039999300999999903999990039999303999999908a88a80088888b008888800d555555d111111110000000000000000000000000000000000000000
+00077000039999300999999903999990039999303999999908888880088888b008887800d555555d111111110000000000000000000000000000000000000000
+007007000399993009999999039999900399993039999999088888800888a88008888800d555555d111111110000000000000000000000000000000000000000
+000000000399993003333333039999300399993033333333088888800888888000888000d555555d111111110000000000000000000000000000000000000000
+000000000000000000000000000000000333333000000000000000000000000000000000dddddddd111111110000000000000000000000000000000000000000
