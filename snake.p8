@@ -69,6 +69,11 @@ function _update()
 		if(update_time > update_interval) then
 			update_time = 0
 			update_snake()
+			if check_victory() then
+				is_game_running=false
+				draw_win_panel()
+				return	
+			end
 			if is_fruit_placed and is_game_running then
 				add_fruit()
 			end
@@ -171,9 +176,10 @@ function draw_panel()
 --	print(fruit_pos.x..','..fruit_pos.y,1,50)
 end
 
-function draw_win_screen()
- rectfill(30,30,98,98,4)
- print('you win',64,64)
+function draw_win_panel()
+ rectfill(32,32,128-32,128-32,4)
+ print('you win',32,64,6)
+ print('press 🅾️ to reset',6)
 end
 -->8
 -- update functions
