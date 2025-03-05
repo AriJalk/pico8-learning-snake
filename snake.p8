@@ -59,14 +59,15 @@ segment_num={x=4,y=4}
 segment_size={x=tile_num.x/segment_num.x,y=tile_num.y/segment_num.y}
 
 --loop variables
-update_interval = 0.3
-update_time = 0
-dec_value=0.0005
+tick_rate = 300
+last_tick = 0
+dec_value=5
 
 
 function _init()
 	is_game_running=true
- update_interval=0.15
+ tick_rate=300
+ last_tick=0
  snake_size=3
  snake_pos={}
  score=0
@@ -84,11 +85,10 @@ end
 function _update()
 	if is_game_running then
 		update_input()
-		update_time += time()-last_time
-		last_time = time()
+		local now=time()*1000
 		--check for update tick
-		if(update_time > update_interval) then
-			update_time = 0
+		if now-last_tick>=tick_rate then
+			last_tick=now
 			update_snake()
 			if check_victory() then
 				is_game_running=false
@@ -266,7 +266,7 @@ function draw_panel()
 	rectfill(0,0,panel_size.x-1,panel_size.y-1,1)
 	color(9)
 	print("s:"..score,1,1)
-	print('i:'..update_interval,1,10)
+	print('i:'..tick_rate,1,10)
 end
 
 function draw_win_panel()
@@ -295,15 +295,8 @@ function update_input()
 	elseif btn(⬆️) then
 		new_dir=directions.up
 	end
-	if new_dir then
- //todo: remove if
-	 if snake_size>1 then
-			local new_pos=pos_add(snake_pos[1],new_dir)
-			if pos_equals(new_pos,snake_pos[2]) then
-				return
-			end
- 	end
-  direction=new_dir
+	if new_dir and (not pos_equals(pos_add(snake_pos[1], new_dir), snake_pos[2])) then
+		direction = new_dir
 	end
 end
 
@@ -321,8 +314,7 @@ function update_snake()
 		snake_size+=1
 		score+=1
 		--speed up
- 	update_interval-=dec_value
- 	update_interval=max(0,update_interval)
+ 	tick_rate=max(0,tick_rate-dec_value)
 	end
 	--update body inward
 	for cell=snake_size,2,-1 do
