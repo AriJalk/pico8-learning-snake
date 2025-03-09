@@ -21,7 +21,7 @@ My first PICO-8 project, a simple snake game 6-day side-project to learn PICO-8 
 * Since the game is tick based without animations in-between, redrawing the gamestate every frame update hurt performance, so the game uses optimized drawing where only the changes are added to the draw buffer.
 * Checking all possible collisions in the game every update tick also hurt performance, so collision segments were added, splitting the play area to smaller segments, using lookup tables to provide efficient collision detection.
 * Visual clarity in anticipating the next moves means the snake must leave a visually clear trail, so sprites are used for the 4 possible different parts (head, body, corner, tail) in both orientations, using internal cell direction to decide how to handle the sprite drawing.
-* In order for the controls to be responsive an input buffer was uses, allowing the player to input more than 1 move before the next frame update.
+* In order for the controls to be responsive an input buffer was used, allowing the player to input more than one move before the next frame update.
 
 ## Changes I would like to add
 * Better seperation of concerns, extracting more code to smaller functions (specifically the update functions).
