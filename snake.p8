@@ -62,15 +62,19 @@ segment_num={x=4,y=4}
 segment_size={x=tile_num.x/segment_num.x,y=tile_num.y/segment_num.y}
 
 --loop variables
-tick_rate = 300
-last_tick = 0
-dec_value=5
+initial_tick_rate=150
+tick_rate=nil
+last_tick=0
+initial_dec_value=1
+dec_value=nil
+
 
 
 function _init()
 	dir_buffer={}
 	is_game_running=true
- tick_rate=300
+ tick_rate=initial_tick_rate
+ dec_value=initial_dec_value
  last_tick=0
  snake_size=4
  snake_pos={}
@@ -328,6 +332,7 @@ function update_snake()
 		score+=1
 		--speed up
  	tick_rate=max(0,tick_rate-dec_value)
+ 	dec_value+=0.1
 	end
 	--update body inward
 	for cell=snake_size,2,-1 do
