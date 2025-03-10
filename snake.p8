@@ -73,12 +73,12 @@ dec_value=nil
 function _init()
 	dir_buffer={}
 	is_game_running=true
- tick_rate=initial_tick_rate
- dec_value=initial_dec_value
- last_tick=0
- snake_size=4
- snake_pos={}
- score=0
+	tick_rate=initial_tick_rate
+	dec_value=initial_dec_value
+	last_tick=0
+	snake_size=4
+	snake_pos={}
+	score=0
 	build_segments()
 	direction=dir_rnd()
 	build_wall()
@@ -86,8 +86,8 @@ function _init()
 	tail_pos=nil
 	add_fruit()
 	is_fruit_placed=false
- last_time = time()
- draw_initial()
+	last_time = time()
+	draw_initial()
 end
 
 function _update()
@@ -103,19 +103,19 @@ function _update()
 				draw_win_panel()
 				return	
 			end
-			if is_fruit_placed and is_game_running then
-				add_fruit()
-			end
+		if is_fruit_placed and is_game_running then
+			add_fruit()
+	end
 			--check if lost by collision
 			if check_collision(snake_pos[1]) then
-			 is_game_running=false
-			 draw_lose_panel()
-			 return
+				is_game_running=false
+				draw_lose_panel()
+				return
 			end
 		end
 	draw_update()
- end
- --test button to decelerate
+	end
+	--test button to decelerate
 	if (btn(❎)) then
 		tick_rate=min(tick_rate+10,1000)
 	--reset button
@@ -134,10 +134,10 @@ end
 function draw_initial()
 	cls(1)
 	draw_floor()
- draw_walls()
- draw_snake_initial()
- draw_fruit()
- flip()
+	draw_walls()
+	draw_snake_initial()
+	draw_fruit()
+	flip()
 end
 
 function draw_update()
@@ -167,44 +167,44 @@ end
 
 --draw horizontal/vertical sprites
 function draw_orientation(spr_name,pos,dir)
- if dir==nil then
-  dir=pos.dir
- end
- local flip_x=false
- local flip_y=false
- local o=nil
- local right=(dir==directions.right)
- local left=(dir==directions.left)
- local up=(dir==directions.up)
- local down=(dir==directions.down)
+	if dir==nil then
+		dir=pos.dir
+	end
+	local flip_x=false
+	local flip_y=false
+	local o=nil
+	local right=(dir==directions.right)
+	local left=(dir==directions.left)
+	local up=(dir==directions.up)
+	local down=(dir==directions.down)
 
- if right or left then
-  o='h'
-  if left then
-   flip_x=true
-  end
- elseif up or down then
-  o='v'
-  if down then
-  	flip_y=true
-  end
- end
- local str=spr_name..'_'..o
+	if right or left then
+		o='h'
+		if left then
+			flip_x=true
+		end
+	elseif up or down then
+		o='v'
+		if down then
+			flip_y=true
+			end
+		end
+	local str=spr_name..'_'..o
  draw_sprite(sprites[str],pos,flip_x,flip_y)
 end
 
 --initial draw functions
 
 function draw_snake_initial()
- draw_head()
- draw_body_initial()
- draw_tail()
+	draw_head()
+	draw_body_initial()
+	draw_tail()
 end
 
 function draw_body_initial()
- for i=1,snake_size-1 do
-  draw_orientation('body',snake_pos[i])
- end
+	for i=1,snake_size-1 do
+		draw_orientation('body',snake_pos[i])
+	end
 end
 
 function draw_walls()
@@ -214,11 +214,11 @@ function draw_walls()
 end
 
 function draw_floor()
- for i=1,tile_num.x-1 do
- 	for j=1, tile_num.y-1 do
- 		draw_sprite(sprites.floor,{x=i,y=j})
- 	end
- end
+	for i=1,tile_num.x-1 do
+ 		for j=1, tile_num.y-1 do
+ 			draw_sprite(sprites.floor,{x=i,y=j})
+ 		end
+	 end
 end
 
 --loop draw functions
@@ -238,13 +238,13 @@ function draw_snake_update()
 end
 
 function draw_body_update()
- --continuous
- if snake_pos[2].dir==snake_pos[1].dir then
- 	draw_orientation('body',snake_pos[2])
- else
-  --corner
-  draw_elbow() 	
- end
+	--continuous
+	if snake_pos[2].dir==snake_pos[1].dir then
+		draw_orientation('body',snake_pos[2])
+	else
+	--corner
+		draw_elbow()
+	end
 end
 
 --element draw functions
@@ -258,9 +258,9 @@ function draw_head()
 end
 
 function draw_tail()
- if snake_size>1 then
- 	draw_orientation('tail',snake_pos[snake_size],snake_pos[snake_size-1].dir)
- end
+	if snake_size>1 then
+ 		draw_orientation('tail',snake_pos[snake_size],snake_pos[snake_size-1].dir)
+	end
 end
 
 --draws a corner between cells[1,3]
@@ -270,10 +270,10 @@ function draw_elbow()
 	local pos_a=snake_pos[1]
 	local pos_b=snake_pos[2]
 	--check elbow type
- local flip_x=(pos_a.dir==directions.left)or(pos_b.dir==directions.right)
- local flip_y=(pos_a.dir==directions.down)or(pos_b.dir==directions.up)
- --draw the elbow based on elbow type
-	  draw_sprite(sprite,pos_b,flip_x,flip_y)
+	local flip_x=(pos_a.dir==directions.left)or(pos_b.dir==directions.right)
+	local flip_y=(pos_a.dir==directions.down)or(pos_b.dir==directions.up)
+	--draw the elbow based on elbow type
+	draw_sprite(sprite,pos_b,flip_x,flip_y)
 end
 
 --panels
@@ -287,15 +287,15 @@ end
 
 function draw_win_panel()
 -- rectfill(25,25,128-25,128-25,4)
- print('you win',32,64,10)
- print('press 🅾️ to reset',10)
+	print('you win',32,64,10)
+	print('press 🅾️ to reset',10)
 end
 
 function draw_lose_panel()
--- rectfill(25,25,128-25,128-25,2)
- print('you lose, score:'..score,32,64,10)
- print('press 🅾️ to reset',10)
-end
+	-- rectfill(25,25,128-25,128-25,2)
+	print('you lose, score:'..score,32,64,10)
+	print('press 🅾️ to reset',10)
+	end
 -->8
 -- logic update functions
 
@@ -336,22 +336,22 @@ function update_snake()
 	end
 	--update body inward
 	for cell=snake_size,2,-1 do
- 		snake_pos[cell]=snake_pos[cell-1]
- end
- --update head
- add_collision(snake_pos[1])
- snake_pos[1]=head_pos
- snake_pos[1].dir=direction
+		snake_pos[cell]=snake_pos[cell-1]
+	end
+	--update head
+	add_collision(snake_pos[1])
+	snake_pos[1]=head_pos
+	snake_pos[1].dir=direction
 end
 
 function add_fruit()
- while true do
- 	local pos=pos_rnd()
- 	if not check_collision(pos) and not pos_equals(pos,head_pos) then
- 	 fruit_pos=pos
- 		return
- 	end
- end
+	while true do
+		local pos=pos_rnd()
+		if not check_collision(pos) and not pos_equals(pos,head_pos) then
+	 		fruit_pos=pos
+			return
+		end
+	end
 end
 
 function check_victory()
@@ -392,21 +392,21 @@ end
 
 --convert position to string
 function pos_str(pos)
- return pos.x..','..pos.y
+	return pos.x..','..pos.y
 end
 
 --random direction
 function dir_rnd()
- local num=flr(rnd(4)+1)
- if num==1 then
- 	return directions.right
- elseif num==2 then
- 	return directions.left
- elseif num==3 then
-  return directions.up
- elseif num==4 then
-  return directions.down
- end
+	local num=flr(rnd(4)+1)
+	if num==1 then
+		return directions.right
+	elseif num==2 then
+		return directions.left
+	elseif num==3 then
+		return directions.up
+	elseif num==4 then
+		return directions.down
+	end
 end
 -->8
 --building functions
@@ -451,11 +451,11 @@ end
 
 function build_segments()
 	segments={}
- for i=0,segment_num.x do
- 	for j=0,segment_num.y do
- 	 segments[i..','..j]={}
- 	end
- end
+	for i=0,segment_num.x do
+		for j=0,segment_num.y do
+			segments[i..','..j]={}
+		end
+	end
 end
 
 --get matching segment for position
